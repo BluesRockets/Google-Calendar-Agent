@@ -1,5 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from connectionManager import manager
 
 app = FastAPI()
 
@@ -16,6 +17,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/")
-def read_root():
-    return {"message": "FastAPI is running!"}
+@app.websocket("/ws/{client_id}")
+async def websocket_endpoint(websocket: WebSocket, client_id: int):
+    await manager.connect(websocket)
+    try:
+        while True:
+            # receive message from client
+            data = await websocket.receive_text()
+            
+            await manager.send_personal_message(f"you sent: {data}", websocket)
+            
+            
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+        print(f"user #{client_id} leave")
