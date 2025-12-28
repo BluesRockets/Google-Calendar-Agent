@@ -7,6 +7,7 @@ export const Welcome = () => {
   const [messageHistory, setMessageHistory] = useState([]);
   const [testMessage, setTestMessage] = useState('');
   const [isRecording, setIsRecording] = useState(false);
+  const [isAwaitingResponse, setIsAwaitingResponse] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const messageListRef = useRef<HTMLUListElement | null>(null);
@@ -25,6 +26,7 @@ export const Welcome = () => {
   useEffect(() => {
     if (lastMessage !== null) {
       setMessageHistory((prev) => prev.concat(lastMessage.data));
+      setIsAwaitingResponse(false);
     }
   }, [lastMessage]);
 
@@ -43,6 +45,7 @@ export const Welcome = () => {
     if (!value) {
       return;
     }
+    setIsAwaitingResponse(true);
     sendMessage(value);
   };
 
@@ -73,6 +76,7 @@ export const Welcome = () => {
         sendMessage(audioBlob);
         stream.getTracks().forEach((track) => track.stop());
         setIsRecording(false);
+        setIsAwaitingResponse(true);
       };
 
       recorder.start();
@@ -134,7 +138,7 @@ export const Welcome = () => {
             <button
               className="cursor-pointer rounded-full border border-[#e6dacd] bg-transparent px-5 py-2 text-xs font-semibold text-[#1f1b16] transition hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(31,27,22,0.12)] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none disabled:transform-none"
               onClick={handleClickSendMessage}
-              disabled={readyState !== ReadyState.OPEN || !testMessage.trim()}
+              disabled={readyState !== ReadyState.OPEN || !testMessage.trim() || isAwaitingResponse}
             >
               发送
             </button>
@@ -146,7 +150,7 @@ export const Welcome = () => {
                 : 'bg-[linear-gradient(120deg,#d97944,#b24f2e)] shadow-[0_12px_24px_rgba(178,79,46,0.28)]'
             }`}
             onClick={handleClickRecord}
-            disabled={readyState !== ReadyState.OPEN}
+            disabled={readyState !== ReadyState.OPEN || (isAwaitingResponse && !isRecording)}
           >
             {isRecording ? '停止对话' : '开始语音对话'}
           </button>

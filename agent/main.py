@@ -1,10 +1,16 @@
 import os
 from dotenv import load_dotenv
+load_dotenv()
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from connectionManager import manager
-load_dotenv()
-from tools import calendar_agent, CalendarDeps
+from connection_manager import manager
+from agent import calendar_agent, CalendarDeps
+import agent_tools
+
+# import debugpy
+# debugpy.listen(("0.0.0.0", 5678))
+# print("Waiting for debugger attach...")
+# debugpy.wait_for_client()
 
 app = FastAPI()
 
@@ -24,6 +30,7 @@ app.add_middleware(
 @app.websocket("/ws/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, client_id: int):
     await manager.connect(websocket)
+    deps = CalendarDeps()
     try:
         while True:
             # receive message from client
@@ -35,7 +42,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
                     continue
 
                 try:
-                    result = await calendar_agent.run(data, deps=CalendarDeps())
+                    result = await calendar_agent.run(data, deps=deps)
                 except Exception as exc:
                     await manager.send_personal_message(f"Agent 运行失败: {exc}", websocket)
                     continue

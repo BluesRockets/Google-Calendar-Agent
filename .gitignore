@@ -6,6 +6,6 @@ node_modules/
 .react-router/
 build/
 
-
+venv/
 __pycache__/
 agent/.calendar_profile/

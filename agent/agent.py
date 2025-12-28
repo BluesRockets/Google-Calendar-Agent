@@ -1,10 +1,7 @@
 from dataclasses import dataclass, field
 from pathlib import Path
-import time
 from typing import Optional
-
-from pydantic_ai import Agent, RunContext
-from pydantic import BaseModel, Field
+from pydantic_ai import Agent
 from playwright.async_api import async_playwright, BrowserContext, Page, Playwright
 
 @dataclass
@@ -23,15 +20,8 @@ calendar_agent = Agent(
     system_prompt=(
         "你是一个Google日历助手。"
         "只能使用提供的工具操作日历，不要试图猜测结果。"
+        "在执行任何日程相关操作前，必须先调用 get_today_date 获取今天日期作为参考。"
+        "在创建任何日程前，必须先调用 check_availability 检查冲突并确认无冲突。"
         "如果用户提到的时间不明确，请通过语音询问。"
     )
 )
-
-# define agent parameters
-class EventDetails(BaseModel):
-    title: str = Field(description="日程的标题")
-    date_str: str = Field(description="日期，格式必须为 YYYY-MM-DD")
-    start_time: str = Field(description="开始时间，格式 HH:mm (24小时制)")
-    end_time: str = Field(description="结束时间，格式 HH:mm (24小时制)")
-
-
