@@ -23,9 +23,14 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
     try:
         while True:
             # receive message from client
-            data = await websocket.receive_text()
-            
-            await manager.send_personal_message(f"you sent: {data}", websocket)
+            message = await websocket.receive()
+            if "text" in message and message["text"] is not None:
+                data = message["text"]
+                await manager.send_personal_message(f"you sent: {data}", websocket)
+            elif "bytes" in message and message["bytes"] is not None:
+                data_bytes = message["bytes"]
+                size = len(data_bytes)
+                await manager.send_personal_message(f"received bytes: {size}", websocket)
             
             
     except WebSocketDisconnect:
