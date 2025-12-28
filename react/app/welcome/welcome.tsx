@@ -5,9 +5,11 @@ export const Welcome = () => {
   const socketUrl = 'ws://localhost:8000/ws/1';
 
   const [messageHistory, setMessageHistory] = useState([]);
+  const [testMessage, setTestMessage] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const messageListRef = useRef<HTMLUListElement | null>(null);
 
   const {
     sendMessage,
@@ -26,9 +28,22 @@ export const Welcome = () => {
     }
   }, [lastMessage]);
 
+  useEffect(() => {
+    if (messageListRef.current) {
+      messageListRef.current.scrollTo({
+        top: messageListRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  }, [messageHistory]);
+
   // send message
   const handleClickSendMessage = () => {
-    sendMessage('Hello from React!');
+    const value = testMessage.trim();
+    if (!value) {
+      return;
+    }
+    sendMessage(value);
   };
 
   const handleClickRecord = useCallback(async () => {
@@ -102,7 +117,28 @@ export const Welcome = () => {
           <span>WebSocket {connectionStatus}</span>
         </div>
 
-        <div className="relative z-10 mb-7 flex flex-wrap gap-3 font-[Trebuchet_MS,Lucida_Sans,sans-serif] animate-[welcome-rise_700ms_ease_forwards]">
+        <div className="relative z-10 mb-7 grid gap-4 font-[Trebuchet_MS,Lucida_Sans,sans-serif] animate-[welcome-rise_700ms_ease_forwards]">
+          <div className="flex flex-wrap items-center gap-3 rounded-[18px] border border-[#e6dacd] bg-[#fffdf8] px-4 py-3 shadow-[0_10px_30px_rgba(31,27,22,0.08)]">
+            <label className="text-xs uppercase tracking-[0.22em] text-[#6f6258]">Test Message</label>
+            <input
+              className="min-w-[220px] flex-1 bg-transparent text-sm text-[#1f1b16] placeholder:text-[#8b7c72] focus:outline-none"
+              placeholder="输入要发送的内容..."
+              value={testMessage}
+              onChange={(event) => setTestMessage(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  handleClickSendMessage();
+                }
+              }}
+            />
+            <button
+              className="cursor-pointer rounded-full border border-[#e6dacd] bg-transparent px-5 py-2 text-xs font-semibold text-[#1f1b16] transition hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(31,27,22,0.12)] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none disabled:transform-none"
+              onClick={handleClickSendMessage}
+              disabled={readyState !== ReadyState.OPEN || !testMessage.trim()}
+            >
+              发送
+            </button>
+          </div>
           <button
             className={`cursor-pointer rounded-full border border-transparent px-6 py-3 text-sm font-semibold text-[#fffaf6] transition hover:-translate-y-0.5 hover:shadow-[0_18px_30px_rgba(178,79,46,0.32)] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none disabled:transform-none ${
               isRecording
@@ -114,13 +150,6 @@ export const Welcome = () => {
           >
             {isRecording ? '停止对话' : '开始语音对话'}
           </button>
-          <button
-            className="cursor-pointer rounded-full border border-[#e6dacd] bg-transparent px-6 py-3 text-sm font-semibold text-[#1f1b16] transition hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(31,27,22,0.12)] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none disabled:transform-none"
-            onClick={handleClickSendMessage}
-            disabled={readyState !== ReadyState.OPEN}
-          >
-            发送测试消息
-          </button>
         </div>
 
         <section className="relative z-10 rounded-[20px] border border-[#e6dacd] bg-[#fffdf8] px-5 py-5 font-[Trebuchet_MS,Lucida_Sans,sans-serif] animate-[welcome-rise_700ms_ease_forwards]">
@@ -128,7 +157,7 @@ export const Welcome = () => {
             <h3 className="text-sm font-semibold">Received Messages</h3>
             <span className="rounded-full bg-[#f3e1d3] px-2.5 py-1 text-xs text-[#6f6258]">{messageHistory.length}</span>
           </div>
-          <ul className="grid max-h-[260px] gap-2.5 overflow-auto">
+          <ul ref={messageListRef} className="grid max-h-[260px] gap-2.5 overflow-auto">
             {messageHistory.length === 0 && (
               <li className="rounded-[14px] border border-[#f0d9c7] bg-[#fff6ee] px-3.5 py-2.5 text-sm italic text-[#6f6258] animate-[welcome-fade_420ms_ease_both]">
                 等待来自 Agent 的回复…
