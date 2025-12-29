@@ -1,4 +1,5 @@
 # Google Calendar Agent
+这是一个通过语音控制Google Calendar的AI agent，在不使用Google Calendar API 的前提下，自动在用户的 Google 日历中添加日程。
 
 ## 项目功能概述
 - 语音/文字双通道：文字通过 `/ws`，语音通过 `/ws-audio`，互不干扰。
@@ -14,6 +15,7 @@
    - `source venv/bin/activate`
 2. 安装依赖：
    - `pip install -r agent/requirements.txt`
+   - `playwright install` 安装playwright的浏览器依赖
 3. 配置环境变量（新建文件 `.env` 放在项目根目录）：
    - `OPENAI_API_KEY`：openai api key
    - `GROQ_API_KEY`：groq api key
