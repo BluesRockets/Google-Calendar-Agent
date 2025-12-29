@@ -54,21 +54,11 @@ async def websocket_endpoint(websocket: WebSocket, client_id: int):
                     await manager.send_personal_message(f"Agent 运行失败: {exc}", websocket)
                     continue
 
-                response = getattr(result, "data", None)
-                if response is None:
-                    response = getattr(result, "output", None)
-                if response is None:
-                    response = str(result)
+                response = getattr(result, "output", None)
+
                 message_history = result.all_messages()
                 response_text = str(response)
                 await manager.send_personal_message(response_text, websocket)
-                try:
-                    audio_bytes = await text2audio(response_text)
-                    await manager.send_personal_bytes(audio_bytes, websocket)
-                except Exception as exc:
-                    await manager.send_personal_message(f"语音合成失败: {exc}", websocket)
-            elif "bytes" in message and message["bytes"] is not None:
-                await manager.send_personal_message("语音请使用 /ws-audio 通道。", websocket)
             
             
     finally:
@@ -112,11 +102,7 @@ async def websocket_audio_endpoint(websocket: WebSocket, client_id: int):
                 await manager.send_personal_message(f"Agent 运行失败: {exc}", websocket)
                 continue
 
-            response = getattr(result, "data", None)
-            if response is None:
-                response = getattr(result, "output", None)
-            if response is None:
-                response = str(result)
+            response = getattr(result, "output", None)
             message_history = result.all_messages()
             response_text = str(response)
             await manager.send_personal_message(response_text, websocket)
