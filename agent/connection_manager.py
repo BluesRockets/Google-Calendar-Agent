@@ -19,4 +19,7 @@ class ConnectionManager:
     async def send_personal_message(self, message: str, websocket: WebSocket):
         await websocket.send_text(message)
 
+    async def send_personal_bytes(self, data: bytes, websocket: WebSocket):
+        await websocket.send_bytes(data)
+
 manager = ConnectionManager()

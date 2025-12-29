@@ -6,7 +6,7 @@ import utils
 from pydantic_ai import RunContext
 from pydantic import BaseModel, Field
 from playwright.async_api import async_playwright, BrowserContext, Page, Playwright
-from agent import calendar_agent, CalendarDeps
+from agent_service import calendar_agent, CalendarDeps
 
 
 # tool 1: get today's date
